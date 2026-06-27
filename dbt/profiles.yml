@@ -1,0 +1,22 @@
+condodata:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: localhost
+      port: 5432
+      user: "{{ env_var('POSTGRES_USER') }}"
+      password: "{{ env_var('POSTGRES_PASSWORD') }}"
+      dbname: "{{ env_var('POSTGRES_DB') }}"
+      schema: public
+      threads: 4
+
+    prod:
+      type: postgres
+      host: "{{ env_var('PROD_DB_HOST') }}"
+      port: 5432
+      user: "{{ env_var('PROD_DB_USER') }}"
+      password: "{{ env_var('PROD_DB_PASSWORD') }}"
+      dbname: condodata
+      schema: public
+      threads: 8

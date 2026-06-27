@@ -1,0 +1,136 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql:ro
+      - ./scripts/postgres.conf:/etc/postgresql/postgresql.conf:ro
+    ports:
+      - "127.0.0.1:5432:5432"
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+
+  airflow-init:
+    image: apache/airflow:2.8.1-python3.11
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/airflow
+      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY}
+      AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "false"
+      _AIRFLOW_DB_MIGRATE: "true"
+      _AIRFLOW_WWW_USER_CREATE: "true"
+      _AIRFLOW_WWW_USER_USERNAME: ${AIRFLOW_USER}
+      _AIRFLOW_WWW_USER_PASSWORD: ${AIRFLOW_PASSWORD}
+    command: version
+    volumes:
+      - ./orchestration/dags:/opt/airflow/dags:ro
+    security_opt:
+      - no-new-privileges:true
+
+  airflow-webserver:
+    image: apache/airflow:2.8.1-python3.11
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/airflow
+      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY}
+      AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "false"
+      AIRFLOW__WEBSERVER__RBAC: "true"
+    volumes:
+      - ./orchestration/dags:/opt/airflow/dags:ro
+      - airflow_logs:/opt/airflow/logs
+    ports:
+      - "127.0.0.1:8080:8080"
+    command: webserver
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+
+  airflow-scheduler:
+    image: apache/airflow:2.8.1-python3.11
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/airflow
+      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY}
+      AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
+    volumes:
+      - ./orchestration/dags:/opt/airflow/dags:ro
+      - airflow_logs:/opt/airflow/logs
+    command: scheduler
+    security_opt:
+      - no-new-privileges:true
+
+  metabase:
+    image: metabase/metabase:v0.48.3
+    restart: unless-stopped
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 5432
+      MB_DB_USER: ${POSTGRES_USER}
+      MB_DB_PASS: ${POSTGRES_PASSWORD}
+      MB_DB_HOST: postgres
+      MB_ANON_TRACKING_ENABLED: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3000:3000"
+    security_opt:
+      - no-new-privileges:true
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      SECRET_KEY: ${API_SECRET_KEY}
+      ENVIRONMENT: ${ENVIRONMENT}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ./api:/app:ro
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  postgres_data:
+  airflow_logs:

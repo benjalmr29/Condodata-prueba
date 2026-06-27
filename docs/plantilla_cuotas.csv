@@ -1,0 +1,4 @@
+unidad,propietario,periodo,monto,fecha_pago,estado
+101,Apellido Nombre,2024-01,50000,2024-01-05,pagado
+102,Apellido Nombre,2024-01,50000,,pendiente
+103,Apellido Nombre,2024-01,50000,2024-01-10,pagado

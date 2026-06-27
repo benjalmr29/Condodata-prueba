@@ -1,0 +1,32 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: bank_transactions
+        description: Transacciones bancarias crudas extraídas de PDFs.
+        columns:
+          - name: id
+            tests: [unique, not_null]
+          - name: condominio_id
+            tests: [not_null]
+          - name: raw_date
+            tests: [not_null]
+          - name: raw_amount
+            tests: [not_null]
+
+models:
+  - name: stg_bank_transactions
+    description: Transacciones bancarias con tipos correctos y campos normalizados.
+    columns:
+      - name: id
+        tests: [unique, not_null]
+      - name: condominio_id
+        tests: [not_null]
+      - name: fecha
+        tests: [not_null]
+      - name: monto
+        tests: [not_null]
+      - name: descripcion
+        tests: [not_null]
