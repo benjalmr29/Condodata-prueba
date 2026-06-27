@@ -107,5 +107,6 @@ def get_history(
 
 def _get_safe_suffix(filename: str) -> str:
     from pathlib import Path
+
     ext = Path(filename).suffix.lower()
     return ext if ext in _ALLOWED_EXTENSIONS else ".bin"

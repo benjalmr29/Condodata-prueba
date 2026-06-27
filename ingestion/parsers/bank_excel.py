@@ -92,7 +92,7 @@ def _parse_sheet(
         return
 
     df.columns = pd.Index([sanitize_text(str(c)) for c in df.iloc[header_row]])
-    df = df.iloc[header_row + 1:].reset_index(drop=True)
+    df = df.iloc[header_row + 1 :].reset_index(drop=True)
     df = df[df.apply(lambda r: any(str(v).strip() for v in r), axis=1)]
 
     if len(df) > _MAX_ROWS:
@@ -194,4 +194,6 @@ def _parse_row(
         )
 
     except Exception as exc:
-        result.errors.append(f"Hoja '{sheet_name}', fila {row_num}: {type(exc).__name__}")
+        result.errors.append(
+            f"Hoja '{sheet_name}', fila {row_num}: {type(exc).__name__}"
+        )

@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from enum import Enum
 
+
 class SourceType(str, Enum):  # noqa: UP042
     BANK_PDF = "bank_pdf"
     BANK_EXCEL = "bank_excel"

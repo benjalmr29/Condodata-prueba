@@ -13,7 +13,9 @@ def is_duplicate(
         raise ValueError(f"Tabla no permitida: {table}")
 
     row = db.execute(
-        text(f"SELECT 1 FROM {table} WHERE source_hash = :hash AND condominio_id = :cid LIMIT 1"),  # noqa: S608
+        text(
+            f"SELECT 1 FROM {table} WHERE source_hash = :hash AND condominio_id = :cid LIMIT 1"
+        ),  # noqa: S608
         {"hash": source_hash, "cid": condominio_id},
     ).fetchone()
 

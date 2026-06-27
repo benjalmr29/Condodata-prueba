@@ -22,7 +22,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        response.headers["Permissions-Policy"] = (
+            "geolocation=(), microphone=(), camera=()"
+        )
         response.headers["Cache-Control"] = "no-store"
         if settings.environment == "production":
             response.headers["Strict-Transport-Security"] = (
@@ -59,7 +61,9 @@ class RequestSizeMiddleware(BaseHTTPMiddleware):
         if content_length and int(content_length) > max_bytes:
             return JSONResponse(
                 status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                content={"detail": f"Archivo excede el límite de {settings.max_upload_size_mb} MB"},
+                content={
+                    "detail": f"Archivo excede el límite de {settings.max_upload_size_mb} MB"
+                },
             )
         return await call_next(request)
 

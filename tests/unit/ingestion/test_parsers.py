@@ -139,9 +139,11 @@ class TestFileValidator:
         from ingestion.sanitizers.text import sanitize_text
         from api.file_validator import _check_magic_bytes
         from fastapi import HTTPException
+
         with pytest.raises(HTTPException):
             _check_magic_bytes("test.pdf", b"not a pdf at all")
 
     def test_accepts_real_pdf_magic(self) -> None:
         from api.file_validator import _check_magic_bytes
+
         _check_magic_bytes("test.pdf", b"%PDF-1.4 real content")

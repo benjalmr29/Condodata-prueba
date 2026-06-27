@@ -38,7 +38,9 @@ def ingest_file(
     db: Session,
 ) -> ParseResult:
     path = Path(file_path)
-    ing_logger = IngestionLogger(db, source_type=_detect_source_type(path), condominio_id=condominio_id)
+    ing_logger = IngestionLogger(
+        db, source_type=_detect_source_type(path), condominio_id=condominio_id
+    )
     ing_logger.start(path.name)
 
     try:
@@ -50,13 +52,17 @@ def ingest_file(
 
         table = _SOURCE_TABLE.get(result.source_type)
         if table is None:
-            ing_logger.fail(Exception(f"Tipo de fuente sin tabla asignada: {result.source_type}"))
+            ing_logger.fail(
+                Exception(f"Tipo de fuente sin tabla asignada: {result.source_type}")
+            )
             return result
 
         if result.records:
             first_hash = getattr(result.records[0], "source_hash", "")
             if first_hash and is_duplicate(db, first_hash, condominio_id, table):
-                result.warnings.append("Archivo ya fue procesado anteriormente — omitido")
+                result.warnings.append(
+                    "Archivo ya fue procesado anteriormente — omitido"
+                )
                 ing_logger.finish(
                     records_read=result.record_count,
                     records_loaded=0,
@@ -141,7 +147,11 @@ def _detect_source_type(path: Path) -> str:
     ext = path.suffix.lower()
     name = path.name.lower()
     if ext == ".pdf":
-        return "bank_pdf" if not any(k in name for k in ("gasto", "factura")) else "gasto_pdf"
+        return (
+            "bank_pdf"
+            if not any(k in name for k in ("gasto", "factura"))
+            else "gasto_pdf"
+        )
     if ext in {".xlsx", ".xls"}:
         return "bank_excel"
     if ext in {".jpg", ".jpeg", ".png"}:

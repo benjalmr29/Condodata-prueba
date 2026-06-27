@@ -32,7 +32,9 @@ class IngestionLogger:
         )
         self._db.commit()
 
-    def finish(self, records_read: int, records_loaded: int, records_failed: int) -> None:
+    def finish(
+        self, records_read: int, records_loaded: int, records_failed: int
+    ) -> None:
         self._log.info(
             "ingestion_finished",
             records_read=records_read,

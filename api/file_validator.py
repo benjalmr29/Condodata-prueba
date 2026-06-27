@@ -33,10 +33,15 @@ def _check_filename(filename: str) -> None:
     if not filename:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Nombre de archivo requerido")
     if len(filename) > _MAX_FILENAME_LENGTH:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Nombre de archivo demasiado largo")
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "Nombre de archivo demasiado largo"
+        )
     forbidden_chars = set('/\\:*?"<>|')
     if any(c in forbidden_chars for c in filename):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Nombre de archivo contiene caracteres inválidos")
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "Nombre de archivo contiene caracteres inválidos",
+        )
     stem = Path(filename).stem
     if stem.startswith(".") or ".." in filename:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Nombre de archivo inválido")

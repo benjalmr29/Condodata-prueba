@@ -72,9 +72,7 @@ def _parse_gasto_pdf(path: Path, condominio_id: int) -> ParseResult:
         source_hash = compute_file_hash(raw_bytes)
 
         with pdfplumber.open(str(path)) as pdf:
-            full_text = "\n".join(
-                page.extract_text() or "" for page in pdf.pages[:20]
-            )
+            full_text = "\n".join(page.extract_text() or "" for page in pdf.pages[:20])
 
         gasto = _extract_gasto_from_text(
             text=full_text,
@@ -85,7 +83,9 @@ def _parse_gasto_pdf(path: Path, condominio_id: int) -> ParseResult:
         if gasto:
             result.records.append(gasto)
         else:
-            result.warnings.append("No se pudo extraer información del PDF — requiere revisión manual")
+            result.warnings.append(
+                "No se pudo extraer información del PDF — requiere revisión manual"
+            )
 
     except Exception as exc:
         result.status = ParseStatus.FAILED
@@ -121,7 +121,15 @@ def _parse_gasto_excel(path: Path, condominio_id: int) -> ParseResult:
             df = df.iloc[:_MAX_ROWS]
 
         for row_num, row in df.iterrows():
-            _parse_gasto_row(row, int(str(row_num)), col_map, source_hash, path.name, condominio_id, result)
+            _parse_gasto_row(
+                row,
+                int(str(row_num)),
+                col_map,
+                source_hash,
+                path.name,
+                condominio_id,
+                result,
+            )
 
     except Exception as exc:
         result.status = ParseStatus.FAILED
@@ -282,6 +290,7 @@ def _parse_gasto_row(
 ) -> None:
     try:
         import pandas as pd
+
         row_series = row if isinstance(row, pd.Series) else pd.Series(row)  # type: ignore[arg-type]
 
         fecha = sanitize_date(str(row_series.get(col_map.get("fecha", ""), "")))
@@ -316,9 +325,12 @@ def _parse_gasto_row(
 
 def _read_csv_gastos(path: Path) -> object:
     import pandas as pd
+
     for encoding in ("utf-8", "utf-8-sig", "latin-1", "cp1252"):
         try:
-            return pd.read_csv(str(path), dtype=str, encoding=encoding, sep=None, engine="python").fillna("")
+            return pd.read_csv(
+                str(path), dtype=str, encoding=encoding, sep=None, engine="python"
+            ).fillna("")
         except UnicodeDecodeError:
             continue
     return pd.read_csv(str(path), dtype=str, encoding="latin-1").fillna("")

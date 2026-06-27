@@ -130,7 +130,9 @@ def _process_dataframe(
         df = df.iloc[:_MAX_ROWS]
 
     for row_num, row in df.iterrows():
-        _parse_row(row, int(str(row_num)), source_hash, source_file, condominio_id, result)
+        _parse_row(
+            row, int(str(row_num)), source_hash, source_file, condominio_id, result
+        )
 
 
 def _parse_row(

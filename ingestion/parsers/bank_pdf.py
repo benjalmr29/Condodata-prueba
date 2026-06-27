@@ -96,7 +96,9 @@ def _parse_page(
 
         header = _detect_header(table[0])
         if header is None:
-            result.warnings.append(f"Página {page_num + 1}: no se detectó tabla de transacciones")
+            result.warnings.append(
+                f"Página {page_num + 1}: no se detectó tabla de transacciones"
+            )
             return
 
         rows = table[1:]
@@ -119,7 +121,9 @@ def _parse_page(
             )
 
     except Exception as exc:
-        result.errors.append(f"Página {page_num + 1}: error al extraer tabla — {type(exc).__name__}")
+        result.errors.append(
+            f"Página {page_num + 1}: error al extraer tabla — {type(exc).__name__}"
+        )
 
 
 def _detect_header(row: list[str | None]) -> dict[str, int] | None:
