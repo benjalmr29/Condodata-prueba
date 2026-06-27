@@ -2,8 +2,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from enum import Enum
 
-
-class SourceType(str, Enum):
+class SourceType(str, Enum):  # noqa: UP042
     BANK_PDF = "bank_pdf"
     BANK_EXCEL = "bank_excel"
     CUOTA_MANUAL = "cuota_manual"
@@ -12,7 +11,7 @@ class SourceType(str, Enum):
     GASTO_IMAGE = "gasto_image"
 
 
-class ParseStatus(str, Enum):
+class ParseStatus(str, Enum):  # noqa: UP042
     OK = "ok"
     PARTIAL = "partial"
     FAILED = "failed"
